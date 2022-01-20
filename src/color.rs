@@ -16,6 +16,14 @@ impl Color {
     pub fn is_black(&self) -> bool {
         self.r == 0.0 && self.g == 0.0 && self.b == 0.0
     }
+
+    pub fn to_true_color(&self) -> Vec<u8> {
+        vec![
+            (self.r.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.g.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.b.clamp(0.0, 1.0) * 255.0) as u8,
+        ]
+    }
 }
 
 impl PartialEq for Color {
@@ -112,5 +120,20 @@ fn should_multiply_two_colors() {
     let expected = Color::new(0.9, 0.2, 0.04);
     let actual = c1 * c2;
 
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_convert_floating_points_to_true_color() {
+    let expected = vec![255, 0, 0];
+    let actual = Color::new(1.5, 0.0, 0.0).to_true_color();
+    assert_eq!(expected, actual);
+
+    let expected = vec![0, 127, 0];
+    let actual = Color::new(0.0, 0.5, 0.0).to_true_color();
+    assert_eq!(expected, actual);
+
+    let expected = vec![0, 0, 255];
+    let actual = Color::new(-0.5, 0.0, 1.0).to_true_color();
     assert_eq!(expected, actual);
 }

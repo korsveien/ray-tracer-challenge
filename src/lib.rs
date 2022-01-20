@@ -1,3 +1,5 @@
+use crate::canvas::Canvas;
+use crate::color::Color;
 use crate::point::Point;
 use crate::vector::Vector;
 
@@ -42,22 +44,28 @@ fn tick(env: &Environment, proj: &mut Projectile) {
 
 #[test]
 fn fire_virtual_cannon() {
-    let velocity = Vector::new(1.0, 1.0, 0.0) * 100.0;
-    // println!("Initial velocity: {:#?}", velocity);
+    let start = Point::new(0.0, 1.0, 0.0);
+    let velocity = Vector::new(1.0, 1.8, 0.0).normalize() * 11.25;
+    let mut projectile = Projectile::new(start, velocity);
 
-    let mut projectile = Projectile::new(Point::new(0.0, 1.0, 0.0), velocity);
+    let gravity = Vector::new(0.0, -0.1, 0.0);
+    let wind = Vector::new(-0.01, 0.0, 0.0);
 
-    let environment = Environment {
-        gravity: Vector::new(0.0, -0.1, 0.0),
-        wind: Vector::new(-0.01, 0.0, 0.0),
-    };
+    let environment = Environment { gravity, wind };
+
+    let mut canvas = Canvas::new(900, 550);
 
     println!();
     let mut i = 0;
     while projectile.position.y > 0.0 {
         tick(&environment, &mut projectile);
+
+        let (x, y) = (projectile.position.x, projectile.position.y);
+        let red = Color::new(1.0, 0.0, 0.0);
+
+        canvas.set_pixel(x as usize, y as usize, red);
+
         i += 1;
-        // eprintln!("{:#?}", projectile);
     }
     println!();
     println!("Cannonball went {:#?} meters!", projectile.position.x);
