@@ -2,15 +2,19 @@ use crate::equal;
 use std::ops;
 
 #[derive(Debug, Copy, Clone)]
-struct Color {
-    r: f64,
-    g: f64,
-    b: f64,
+pub struct Color {
+    pub r: f64,
+    pub g: f64,
+    pub b: f64,
 }
 
 impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Self {
         Self { r, g, b }
+    }
+
+    pub fn is_black(&self) -> bool {
+        self.r == 0.0 && self.g == 0.0 && self.b == 0.0
     }
 }
 
