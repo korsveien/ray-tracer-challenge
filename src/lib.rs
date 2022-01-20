@@ -3,6 +3,7 @@ use crate::vector::Vector;
 
 mod point;
 mod vector;
+mod color;
 
 fn equal(f1: f64, f2: f64) -> bool {
     const EPSILON: f64 = 0.00001;
