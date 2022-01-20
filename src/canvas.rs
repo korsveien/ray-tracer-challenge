@@ -24,6 +24,10 @@ impl Canvas {
         self.pixels[index] = color;
     }
 
+    pub(crate) fn to_ppm_header(&self) -> String {
+        format!("P3\n{} {}\n255\n", self.width, self.height)
+    }
+
     fn get_index(&self, x: usize, y: usize) -> usize {
         x + self.width * y
     }
@@ -43,4 +47,14 @@ fn should_write_pixel_to_canvas() {
     canvas.write_pixel(2, 3, red);
 
     assert_eq!(canvas.get_pixel(2, 3), red);
+}
+
+#[test]
+fn should_create_proper_ppm_header() {
+    let canvas = Canvas::new(5, 3);
+
+    let expected = "P3\n5 3\n255\n";
+    let result = canvas.to_ppm_header();
+
+    assert_eq!(expected, result);
 }
