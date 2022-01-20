@@ -22,6 +22,18 @@ impl Vector {
             z: self.z / magnitude,
         }
     }
+
+    fn dot(&self, other: &Vector) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    fn cross(&self, other: &Self) -> Self {
+        Self {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
 }
 
 impl Tuple for Vector {
@@ -211,6 +223,33 @@ fn should_normalize_a_vector() {
 
     let expected = Vector::new(0.26726, 0.53452, 0.80178);
     let actual = v.normalize();
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_calculate_dot_product_of_two_vectors() {
+    let a = Vector::new(1.0, 2.0, 3.0);
+    let b = Vector::new(2.0, 3.0, 4.0);
+
+    let expected = 20.0;
+    let actual = a.dot(&b);
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_calculcate_cross_product_of_two_vectors() {
+    let a = Vector::new(1.0, 2.0, 3.0);
+    let b = Vector::new(2.0, 3.0, 4.0);
+
+    let expected = Vector::new(-1.0, 2.0, -1.0);
+    let actual = a.cross(&b);
+
+    assert_eq!(expected, actual);
+
+    let expected = Vector::new(1.0, -2.0, 1.0);
+    let actual = b.cross(&a);
 
     assert_eq!(expected, actual);
 }
