@@ -2,32 +2,16 @@ use crate::vector::Vector;
 use crate::{equal, Tuple};
 use std::ops;
 
-#[derive(Debug)]
-struct Point {
-    x: f64,
-    y: f64,
-    z: f64,
+#[derive(Debug, Copy, Clone)]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl Tuple for Point {
     fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
-    }
-
-    fn x(&self) -> f64 {
-        self.x
-    }
-
-    fn y(&self) -> f64 {
-        self.y
-    }
-
-    fn z(&self) -> f64 {
-        self.z
-    }
-
-    fn w(&self) -> f64 {
-        0.0
     }
 }
 
@@ -42,9 +26,9 @@ impl ops::Add<Vector> for Point {
 
     fn add(self, other: Vector) -> Self {
         Self {
-            x: self.x + other.x(),
-            y: self.y + other.y(),
-            z: self.z + other.z(),
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
         }
     }
 }
@@ -62,9 +46,9 @@ impl ops::Sub<Vector> for Point {
 
     fn sub(self, other: Vector) -> Self {
         Self {
-            x: self.x - other.x(),
-            y: self.y - other.y(),
-            z: self.z - other.z(),
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
         }
     }
 }
@@ -103,6 +87,17 @@ impl ops::Neg for Point {
             z: -self.z,
         }
     }
+}
+
+#[test]
+fn should_add_a_vector_to_a_point() {
+    let v1 = Vector::new(3.0, -2.0, 5.0);
+    let v2 = Vector::new(-2.0, 1.0, 1.0);
+
+    let expected = Vector::new(1.0, -1.0, 6.0);
+    let actual = v1 + v2;
+
+    assert_eq!(expected, actual);
 }
 
 #[test]

@@ -1,20 +1,20 @@
 use crate::{equal, Tuple};
 use std::ops;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Vector {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl Vector {
-    fn magnitude(&self) -> f64 {
+    pub fn magnitude(&self) -> f64 {
         let sum_of_squares = self.x.powf(2.0) + self.y.powf(2.0) + self.z.powf(2.0);
         sum_of_squares.sqrt()
     }
 
-    fn normalize(&self) -> Self {
+    pub fn normalize(&self) -> Self {
         let magnitude = self.magnitude();
         Self {
             x: self.x / magnitude,
@@ -23,11 +23,11 @@ impl Vector {
         }
     }
 
-    fn dot(&self, other: &Vector) -> f64 {
+    pub fn dot(&self, other: &Vector) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    fn cross(&self, other: &Self) -> Self {
+    pub fn cross(&self, other: &Self) -> Self {
         Self {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -40,27 +40,23 @@ impl Tuple for Vector {
     fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
-
-    fn x(&self) -> f64 {
-        self.x
-    }
-
-    fn y(&self) -> f64 {
-        self.y
-    }
-
-    fn z(&self) -> f64 {
-        self.z
-    }
-
-    fn w(&self) -> f64 {
-        0.0
-    }
 }
 
 impl PartialEq for Vector {
     fn eq(&self, other: &Self) -> bool {
         equal(self.x, other.x) && equal(self.y, other.y) && equal(self.z, other.z)
+    }
+}
+
+impl ops::Add<Vector> for Vector {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
     }
 }
 
@@ -225,6 +221,13 @@ fn should_normalize_a_vector() {
     let actual = v.normalize();
 
     assert_eq!(expected, actual);
+
+    let v = Vector::new(1.0, 2.0, 3.0);
+
+    let expected = 1.0;
+    let actual = v.normalize().magnitude();
+
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -239,7 +242,7 @@ fn should_calculate_dot_product_of_two_vectors() {
 }
 
 #[test]
-fn should_calculcate_cross_product_of_two_vectors() {
+fn should_calculate_cross_product_of_two_vectors() {
     let a = Vector::new(1.0, 2.0, 3.0);
     let b = Vector::new(2.0, 3.0, 4.0);
 
