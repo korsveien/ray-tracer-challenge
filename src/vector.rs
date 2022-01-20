@@ -13,6 +13,15 @@ impl Vector {
         let sum_of_squares = self.x.powf(2.0) + self.y.powf(2.0) + self.z.powf(2.0);
         sum_of_squares.sqrt()
     }
+
+    fn normalize(&self) -> Self {
+        let magnitude = self.magnitude();
+        Self {
+            x: self.x / magnitude,
+            y: self.y / magnitude,
+            z: self.z / magnitude,
+        }
+    }
 }
 
 impl Tuple for Vector {
@@ -185,6 +194,23 @@ fn should_compute_the_magnitude_of_a_vector() {
 
     let expected = 14.0_f64.sqrt();
     let actual = v.magnitude();
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_normalize_a_vector() {
+    let v = Vector::new(4.0, 0.0, 0.0);
+
+    let expected = Vector::new(1.0, 0.0, 0.0);
+    let actual = v.normalize();
+
+    assert_eq!(expected, actual);
+
+    let v = Vector::new(1.0, 2.0, 3.0);
+
+    let expected = Vector::new(0.26726, 0.53452, 0.80178);
+    let actual = v.normalize();
 
     assert_eq!(expected, actual);
 }
