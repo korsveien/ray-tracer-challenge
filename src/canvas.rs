@@ -5,7 +5,7 @@ use std::io::Write;
 
 pub struct Canvas {
     width: usize,
-    height: usize,
+    pub height: usize,
     pixels: Vec<Color>,
 }
 
@@ -32,6 +32,9 @@ impl Canvas {
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
         let index = self.get_index(x, y);
+        if index >= self.pixels.len() {
+            return;
+        }
         self.pixels[index] = color;
     }
 

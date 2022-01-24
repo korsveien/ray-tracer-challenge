@@ -60,14 +60,19 @@ fn fire_virtual_cannon() {
     while projectile.position.y > 0.0 {
         tick(&environment, &mut projectile);
 
-        let (x, y) = (projectile.position.x, projectile.position.y);
+        let (x, y) = (
+            projectile.position.x as usize,
+            canvas.height - projectile.position.y as usize,
+        );
         let red = Color::new(1.0, 0.0, 0.0);
 
-        canvas.set_pixel(x as usize, y as usize, red);
+        canvas.set_pixel(x, y, red);
 
         i += 1;
     }
     println!();
     println!("Cannonball went {:#?} meters!", projectile.position.x);
     println!("Finished after {} ticks", i);
+
+    canvas.write_to_file();
 }
