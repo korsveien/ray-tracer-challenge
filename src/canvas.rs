@@ -148,7 +148,7 @@ fn should_create_ppm_pixel_data() {
 
 #[test]
 fn should_split_long_lines() {
-    let mut canvas = Canvas::with_color(10, 2, Color::new(1.0, 0.8, 0.6));
+    let canvas = Canvas::with_color(10, 2, Color::new(1.0, 0.8, 0.6));
 
     let expected = r"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204
 153 255 204 153 255 204 153 255 204 153 255 204 153
