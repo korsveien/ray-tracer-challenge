@@ -74,5 +74,5 @@ fn fire_virtual_cannon() {
     println!("Cannonball went {:#?} meters!", projectile.position.x);
     println!("Finished after {} ticks", i);
 
-    canvas.write_to_file();
+    canvas.write_to_file().expect("Could not write to file")
 }
