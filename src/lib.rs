@@ -1,3 +1,5 @@
+extern crate core;
+
 use crate::canvas::Canvas;
 use crate::color::Color;
 use crate::point::Point;
@@ -5,10 +7,11 @@ use crate::vector::Vector;
 
 mod canvas;
 mod color;
+mod matrix;
 mod point;
 mod vector;
 
-fn equal(f1: f64, f2: f64) -> bool {
+pub fn equal(f1: f64, f2: f64) -> bool {
     const EPSILON: f64 = 0.00001;
     if (f1 - f2).abs() < EPSILON {
         return true;
