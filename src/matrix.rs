@@ -1,4 +1,6 @@
 use crate::equal;
+use std::ops;
+use std::os::unix::raw::off_t;
 
 #[derive(Debug, Clone)]
 struct Matrix<'a> {
@@ -34,6 +36,23 @@ impl<'a> PartialEq for Matrix<'a> {
     }
 }
 
+impl ops::Mul for Matrix {
+    type Output = f64;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let len = self.entries.len();
+        assert_eq!(len, rhs.entries.len());
+
+        let mut numbers = Vec::new();
+
+        for row in self.entries {
+            for entry in row {
+                rhs.entries.get()
+            }
+        }
+    }
+}
+
 #[test]
 #[should_panic]
 fn should_panic_if_not_quadratical() {
@@ -65,4 +84,36 @@ fn should_compare_equality() {
     let m2 = Matrix::with_entries(&entries);
 
     assert_eq!(m1, m2);
+
+    let entries_other = vec![
+        vec![2.0, 3.0, 4.0, 5.0],
+        vec![6.0, 7.0, 8.0, 9.0],
+        vec![8.0, 7.0, 6.0, 5.0],
+        vec![4.0, 3.0, 2.0, 1.0],
+    ];
+
+    let m3 = Matrix::with_entries(&entries_other);
+
+    assert_ne!(m1, m3);
+}
+
+#[test]
+fn should_multiply_matrices_together() {
+    let entries_a = vec![
+        vec![1.0, 2.0, 3.0, 4.0],
+        vec![5.0, 6.0, 7.0, 8.0],
+        vec![9.0, 8.0, 7.0, 6.0],
+        vec![5.0, 4.0, 3.0, 2.0],
+    ];
+
+    let a = Matrix::new(&entries_a);
+
+    let entries_b = vec![
+        vec![-2.0, 1.0, 2.0, 3.0],
+        vec![3.0, 2.0, 1.0, -1.0],
+        vec![4.0, 3.0, 6.0, 5.0],
+        vec![1.0, 2.0, 7.0, 8.0],
+    ];
+
+    let b = Matrix::new(&entries_b);
 }
