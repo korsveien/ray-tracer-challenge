@@ -3,6 +3,7 @@ use std::ops;
 type Matrix4 = [[f64; 4]; 4];
 type Matrix3 = [[f64; 3]; 3];
 type Matrix2 = [[f64; 2]; 2];
+type Tuple = [f64; 4];
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 struct Matrix {
@@ -30,6 +31,22 @@ impl ops::Mul<Matrix> for Matrix {
         }
 
         Matrix { entries }
+    }
+}
+
+impl ops::Mul<Tuple> for Matrix {
+    type Output = Tuple;
+
+    fn mul(self, other: Tuple) -> Tuple {
+        let mut result: Tuple = [0.0; 4];
+        for row in 0..4 {
+            result[row] = self.entries[row][0] * other[0]
+                + self.entries[row][1] * other[1]
+                + self.entries[row][2] * other[2]
+                + self.entries[row][3] * other[3];
+        }
+
+        result
     }
 }
 
@@ -133,5 +150,21 @@ fn should_multiply_two_matrices() {
 
     let actual = a * b;
 
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_multiply_a_matrix_with_a_tuple() {
+    let a = Matrix::with_entries([
+        [1.0, 2.0, 3.0, 4.0],
+        [2.0, 4.0, 4.0, 2.0],
+        [8.0, 6.0, 4.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]);
+
+    let b: Tuple = [1.0, 2.0, 3.0, 1.0];
+
+    let expected: Tuple = [18.0, 24.0, 33.0, 1.0];
+    let actual: Tuple = a * b;
     assert_eq!(expected, actual);
 }
