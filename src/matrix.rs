@@ -11,8 +11,18 @@ struct Matrix {
 }
 
 impl Matrix {
-    fn with_entries(entries: Matrix4) -> Matrix {
-        Matrix { entries }
+    fn with_entries(entries: Matrix4) -> Self {
+        Self { entries }
+    }
+
+    fn transpose(&self) -> Self {
+        let mut entries: Matrix4 = [[0.0; 4]; 4];
+        for row in 0..4 {
+            for col in 0..4 {
+                entries[col][row] = self.entries[row][col]
+            }
+        }
+        Self { entries }
     }
 }
 
@@ -167,4 +177,58 @@ fn should_multiply_a_matrix_with_a_tuple() {
     let expected: Tuple = [18.0, 24.0, 33.0, 1.0];
     let actual: Tuple = a * b;
     assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_multiply_matrix_by_the_identity_matrix() {
+    let a = Matrix::with_entries([
+        [0.0, 1.0, 2.0, 4.0],
+        [1.0, 2.0, 4.0, 8.0],
+        [2.0, 4.0, 8.0, 16.0],
+        [4.0, 8.0, 16.0, 32.0],
+    ]);
+
+    let identity_matrix = Matrix::with_entries([
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]);
+
+    let actual = a * identity_matrix;
+    assert_eq!(a, actual);
+}
+
+#[test]
+fn should_multiply_matrix_by_a_tuple() {
+    let a: Tuple = [1.0, 2.0, 3.0, 4.0];
+
+    let identity_matrix = Matrix::with_entries([
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]);
+
+    let actual = identity_matrix * a;
+    assert_eq!(a, actual);
+}
+
+#[test]
+fn should_transpose_a_matrix() {
+    let a = Matrix::with_entries([
+        [0.0, 9.0, 3.0, 0.0],
+        [9.0, 8.0, 0.0, 8.0],
+        [1.0, 8.0, 5.0, 3.0],
+        [0.0, 0.0, 5.0, 8.0],
+    ]);
+
+    let expected = Matrix::with_entries([
+        [0.0, 9.0, 1.0, 0.0],
+        [9.0, 8.0, 8.0, 0.0],
+        [3.0, 0.0, 5.0, 5.0],
+        [0.0, 8.0, 3.0, 8.0],
+    ]);
+
+    assert_eq!(expected, a.transpose());
 }
