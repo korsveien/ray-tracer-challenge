@@ -24,6 +24,10 @@ impl Matrix {
         }
         Self { entries }
     }
+
+    fn determinant(m: Matrix2) -> f64 {
+        m[0][0] * m[1][1] - m[1][0] * m[0][1]
+    }
 }
 
 impl ops::Mul<Matrix> for Matrix {
@@ -231,4 +235,26 @@ fn should_transpose_a_matrix() {
     ]);
 
     assert_eq!(expected, a.transpose());
+}
+
+#[test]
+fn should_transpose_identity_matrix() {
+    let identity_matrix = Matrix::with_entries([
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]);
+
+    assert_eq!(identity_matrix, identity_matrix.transpose());
+}
+
+#[test]
+fn should_calculate_the_determinant() {
+    let a: Matrix2 = [[1.0, 5.0], [-3.0, 2.0]];
+    let expected = 17.0;
+
+    let actual = Matrix::determinant(a);
+
+    assert_eq!(expected, actual);
 }
