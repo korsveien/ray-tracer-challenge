@@ -1,40 +1,56 @@
 use std::ops;
 
-type Matrix4 = [[f64; 4]; 4];
-type Matrix3 = [[f64; 3]; 3];
-type Matrix2 = [[f64; 2]; 2];
 type Tuple = [f64; 4];
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-struct Matrix {
-    entries: Matrix4,
+struct Matrix<const D: usize> {
+    entries: [[f64; D]; D],
 }
 
-impl Matrix {
-    fn with_entries(entries: Matrix4) -> Self {
-        Self { entries }
+impl<const D: usize> From<[[f64; D]; D]> for Matrix<D> {
+    fn from(entries: [[f64; D]; D]) -> Self {
+        Matrix { entries }
+    }
+}
+
+impl<const D: usize> Matrix<D> {
+    fn new() -> Matrix<D> {
+        Matrix::from([[0.0; D]; D])
     }
 
     fn transpose(&self) -> Self {
-        let mut entries: Matrix4 = [[0.0; 4]; 4];
-        for row in 0..4 {
-            for col in 0..4 {
+        let mut entries = [[0.0; D]; D];
+        for row in 0..D {
+            for col in 0..D {
                 entries[col][row] = self.entries[row][col]
             }
         }
         Self { entries }
     }
+}
 
-    fn determinant(m: Matrix2) -> f64 {
-        m[0][0] * m[1][1] - m[1][0] * m[0][1]
+impl Matrix<2> {
+    fn determinant(&self) -> f64 {
+        self[0][0] * self[1][1] - self[1][0] * self[0][1]
+    }
+}
+
+impl Matrix<3> {
+    fn determinant(&self) -> f64 {
+        let mut determinant = 0.0;
+        for (index, element) in self[0].iter().enumerate() {
+            determinant += element * self.cofactor(0, index);
+        }
+        determinant
     }
 
-    fn submatrix_3_to_2(m: Matrix3, row: usize, col: usize) -> Matrix2 {
-        let mut submatrix = [[0.0; 2]; 2];
+    fn submatrix(&self, row: usize, col: usize) -> Matrix<2> {
+        let mut submatrix = Matrix::new();
         let mut i = 0;
         let mut j = 0;
 
-        for (index, element) in m.iter().enumerate() {
+        //TODO: Can I write self.iter() here?
+        for (index, element) in self.entries.iter().enumerate() {
             if index == row {
                 continue;
             }
@@ -59,12 +75,49 @@ impl Matrix {
         submatrix
     }
 
-    fn submatrix_4_to_3(m: Matrix4, row: usize, col: usize) -> Matrix3 {
-        let mut submatrix = [[0.0; 3]; 3];
+    fn minor(&self, row: usize, col: usize) -> f64 {
+        let submatrix = self.submatrix(row, col);
+        submatrix.determinant()
+    }
+
+    fn cofactor(&self, row: usize, col: usize) -> f64 {
+        let minor = self.minor(row, col);
+        if row + col % 2 == 0 {
+            minor
+        } else {
+            -minor
+        }
+    }
+}
+
+impl Matrix<4> {
+    fn determinant(&self) -> f64 {
+        let mut determinant = 0.0;
+        for (index, element) in self[0].iter().enumerate() {
+            determinant += element * self.cofactor(0, index);
+        }
+        determinant
+    }
+
+    fn minor(&self, row: usize, col: usize) -> f64 {
+        self.submatrix(row, col).determinant()
+    }
+
+    fn cofactor(&self, row: usize, col: usize) -> f64 {
+        let minor = self.minor(row, col);
+        if row + col % 2 == 0 {
+            minor
+        } else {
+            -minor
+        }
+    }
+
+    fn submatrix(&self, row: usize, col: usize) -> Matrix<3> {
+        let mut submatrix = Matrix::new();
         let mut i = 0;
         let mut j = 0;
 
-        for (index, element) in m.iter().enumerate() {
+        for (index, element) in self.entries.iter().enumerate() {
             if index == row {
                 continue;
             }
@@ -88,44 +141,44 @@ impl Matrix {
         }
         submatrix
     }
+}
 
-    fn minor(m: Matrix3, row: usize, col: usize) -> f64 {
-        let submatrix = Matrix::submatrix_3_to_2(m, row, col);
-        Matrix::determinant(submatrix)
-    }
+impl<const D: usize> ops::Index<usize> for Matrix<D> {
+    type Output = [f64; D];
 
-    fn cofactor(m: Matrix3, row: usize, col: usize) -> f64 {
-        let minor = Matrix::minor(m, row, col);
-        if row + col % 2 == 0 {
-            minor
-        } else {
-            -minor
-        }
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.entries[index]
     }
 }
 
-impl ops::Mul<Matrix> for Matrix {
+impl<const D: usize> ops::IndexMut<usize> for Matrix<D> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.entries[index]
+    }
+}
+
+impl<const D: usize> ops::Mul<Matrix<D>> for Matrix<D> {
     type Output = Self;
 
-    fn mul(self, other: Matrix) -> Self {
-        let mut entries: Matrix4 = [[0.0; 4]; 4];
-        for row in 0..4 {
-            for col in 0..4 {
-                entries[row][col] = self.entries[row][0] * other.entries[0][col]
-                    + self.entries[row][1] * other.entries[1][col]
-                    + self.entries[row][2] * other.entries[2][col]
-                    + self.entries[row][3] * other.entries[3][col];
+    fn mul(self, other: Matrix<D>) -> Self::Output {
+        let mut matrix = Matrix::new();
+        for row in 0..D {
+            for col in 0..D {
+                for i in 0..D {
+                    matrix[row][col] += self[row][i] * other[i][col];
+                }
             }
         }
 
-        Matrix { entries }
+        matrix
     }
 }
 
-impl ops::Mul<Tuple> for Matrix {
+//FIXME: this one copies, but should mutate for speed
+impl ops::Mul<Tuple> for Matrix<4> {
     type Output = Tuple;
 
-    fn mul(self, other: Tuple) -> Tuple {
+    fn mul(self, other: Tuple) -> Self::Output {
         let mut result: Tuple = [0.0; 4];
         for row in 0..4 {
             result[row] = self.entries[row][0] * other[0]
@@ -140,12 +193,12 @@ impl ops::Mul<Tuple> for Matrix {
 
 #[test]
 fn should_construct_and_inspect_a_4_by_4_matrix() {
-    let m: Matrix4 = [
+    let m = Matrix::from([
         [1.0, 2.0, 3.0, 4.0],
         [5.5, 6.5, 7.5, 8.5],
         [9.0, 10.0, 11.0, 12.0],
         [13.5, 14.5, 15.5, 16.5],
-    ];
+    ]);
 
     assert_eq!(m[0][0], 1.0);
     assert_eq!(m[0][3], 4.0);
@@ -157,79 +210,60 @@ fn should_construct_and_inspect_a_4_by_4_matrix() {
 }
 
 #[test]
-fn should_construct_and_inspect_a_2_by_2_matrix() {
-    let m: Matrix2 = [[-3.0, 5.0], [1.0, -2.0]];
-
-    assert_eq!(m[0][0], -3.0);
-    assert_eq!(m[0][1], 5.0);
-    assert_eq!(m[1][0], 1.0);
-    assert_eq!(m[1][1], -2.0);
-}
-
-#[test]
-fn should_construct_and_inspect_a_3_by_3_matrix() {
-    let m: Matrix3 = [[-3.0, 5.0, 0.0], [1.0, -2.0, -7.0], [0.0, 1.0, 1.0]];
-
-    assert_eq!(m[0][0], -3.0);
-    assert_eq!(m[1][1], -2.0);
-    assert_eq!(m[2][2], 1.0);
-}
-
-#[test]
 fn should_compare_identical_matrices() {
-    let a: Matrix4 = [
+    let a = Matrix::from([
         [1.0, 2.0, 3.0, 4.0],
         [5.0, 6.0, 7.0, 8.0],
         [9.0, 8.0, 7.0, 6.0],
         [5.0, 4.0, 3.0, 2.0],
-    ];
+    ]);
 
-    let b: Matrix4 = [
+    let b = Matrix::from([
         [1.0, 2.0, 3.0, 4.0],
         [5.0, 6.0, 7.0, 8.0],
         [9.0, 8.0, 7.0, 6.0],
         [5.0, 4.0, 3.0, 2.0],
-    ];
+    ]);
 
     assert_eq!(a, b);
 }
 
 #[test]
 fn should_compare_different_matrices() {
-    let a: Matrix4 = [
+    let a = Matrix::from([
         [1.0, 2.0, 3.0, 4.0],
         [5.0, 6.0, 7.0, 8.0],
         [9.0, 8.0, 7.0, 6.0],
         [5.0, 4.0, 3.0, 2.0],
-    ];
+    ]);
 
-    let b: Matrix4 = [
+    let b = Matrix::from([
         [2.0, 3.0, 4.0, 5.0],
         [6.0, 7.0, 8.0, 9.0],
         [8.0, 7.0, 6.0, 5.0],
         [4.0, 3.0, 2.0, 1.0],
-    ];
+    ]);
 
     assert_ne!(a, b);
 }
 
 #[test]
 fn should_multiply_two_matrices() {
-    let a = Matrix::with_entries([
+    let a = Matrix::from([
         [1.0, 2.0, 3.0, 4.0],
         [5.0, 6.0, 7.0, 8.0],
         [9.0, 8.0, 7.0, 6.0],
         [5.0, 4.0, 3.0, 2.0],
     ]);
 
-    let b = Matrix::with_entries([
+    let b = Matrix::from([
         [-2.0, 1.0, 2.0, 3.0],
         [3.0, 2.0, 1.0, -1.0],
         [4.0, 3.0, 6.0, 5.0],
         [1.0, 2.0, 7.0, 8.0],
     ]);
 
-    let expected = Matrix::with_entries([
+    let expected = Matrix::from([
         [20.0, 22.0, 50.0, 48.0],
         [44.0, 54.0, 114.0, 108.0],
         [40.0, 58.0, 110.0, 102.0],
@@ -243,7 +277,7 @@ fn should_multiply_two_matrices() {
 
 #[test]
 fn should_multiply_a_matrix_with_a_tuple() {
-    let a = Matrix::with_entries([
+    let a = Matrix::from([
         [1.0, 2.0, 3.0, 4.0],
         [2.0, 4.0, 4.0, 2.0],
         [8.0, 6.0, 4.0, 1.0],
@@ -259,14 +293,14 @@ fn should_multiply_a_matrix_with_a_tuple() {
 
 #[test]
 fn should_multiply_matrix_by_the_identity_matrix() {
-    let a = Matrix::with_entries([
+    let a = Matrix::from([
         [0.0, 1.0, 2.0, 4.0],
         [1.0, 2.0, 4.0, 8.0],
         [2.0, 4.0, 8.0, 16.0],
         [4.0, 8.0, 16.0, 32.0],
     ]);
 
-    let identity_matrix = Matrix::with_entries([
+    let identity_matrix = Matrix::from([
         [1.0, 0.0, 0.0, 0.0],
         [0.0, 1.0, 0.0, 0.0],
         [0.0, 0.0, 1.0, 0.0],
@@ -281,7 +315,7 @@ fn should_multiply_matrix_by_the_identity_matrix() {
 fn should_multiply_matrix_by_a_tuple() {
     let a: Tuple = [1.0, 2.0, 3.0, 4.0];
 
-    let identity_matrix = Matrix::with_entries([
+    let identity_matrix = Matrix::from([
         [1.0, 0.0, 0.0, 0.0],
         [0.0, 1.0, 0.0, 0.0],
         [0.0, 0.0, 1.0, 0.0],
@@ -294,14 +328,14 @@ fn should_multiply_matrix_by_a_tuple() {
 
 #[test]
 fn should_transpose_a_matrix() {
-    let a = Matrix::with_entries([
+    let a = Matrix::from([
         [0.0, 9.0, 3.0, 0.0],
         [9.0, 8.0, 0.0, 8.0],
         [1.0, 8.0, 5.0, 3.0],
         [0.0, 0.0, 5.0, 8.0],
     ]);
 
-    let expected = Matrix::with_entries([
+    let expected = Matrix::from([
         [0.0, 9.0, 1.0, 0.0],
         [9.0, 8.0, 8.0, 0.0],
         [3.0, 0.0, 5.0, 5.0],
@@ -313,7 +347,7 @@ fn should_transpose_a_matrix() {
 
 #[test]
 fn should_transpose_identity_matrix() {
-    let identity_matrix = Matrix::with_entries([
+    let identity_matrix = Matrix::from([
         [1.0, 0.0, 0.0, 0.0],
         [0.0, 1.0, 0.0, 0.0],
         [0.0, 0.0, 1.0, 0.0],
@@ -325,44 +359,60 @@ fn should_transpose_identity_matrix() {
 
 #[test]
 fn should_calculate_the_determinant() {
-    let a: Matrix2 = [[1.0, 5.0], [-3.0, 2.0]];
+    let a = Matrix::from([[1.0, 5.0], [-3.0, 2.0]]);
     let expected = 17.0;
-
-    let actual = Matrix::determinant(a);
+    let actual = a.determinant();
 
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn should_return_a_2_x_2_submatrix() {
-    let a: Matrix3 = [[1.0, 5.0, 0.0], [-3.0, 2.0, 7.0], [0.0, 6.0, -3.0]];
-    let expected = [[-3.0, 2.0], [0.0, 6.0]];
-    let actual = Matrix::submatrix_3_to_2(a, 0, 2);
-    assert_eq!(expected, actual);
+    let a = Matrix::from([[1.0, 5.0, 0.0], [-3.0, 2.0, 7.0], [0.0, 6.0, -3.0]]);
+    let expected = Matrix::from([[-3.0, 2.0], [0.0, 6.0]]);
+    assert_eq!(expected, a.submatrix(0, 2));
 }
 
 #[test]
 fn should_return_a_3_x_3_submatrix() {
-    let a: Matrix4 = [
+    let a = Matrix::from([
         [-6.0, 1.0, 1.0, 6.0],
         [-8.0, 5.0, 8.0, 6.0],
         [-1.0, 0.0, 8.0, 2.0],
         [-7.0, 1.0, -1.0, 1.0],
-    ];
-    let expected = [[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]];
-    let actual = Matrix::submatrix_4_to_3(a, 2, 1);
+    ]);
+
+    let expected = Matrix::from([[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]]);
+    let actual = a.submatrix(2, 1);
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn should_return_minor_of_3_by_3_matrix() {
-    let a: Matrix3 = [[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]];
-    assert_eq!(Matrix::minor(a, 1, 0), 25.0);
+    let a = Matrix::from([[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]]);
+    assert_eq!(a.minor(1, 0), 25.0);
 }
 
 #[test]
 fn should_return_cofactor_of_3_by_3_matrix() {
-    let a: Matrix3 = [[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]];
-    assert_eq!(Matrix::cofactor(a, 0, 0), -12.0);
-    assert_eq!(Matrix::cofactor(a, 1, 0), -25.0);
+    let a = Matrix::from([[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]]);
+    assert_eq!(a.cofactor(0, 0), -12.0);
+    assert_eq!(a.cofactor(1, 0), -25.0);
+}
+
+#[test]
+fn should_calculate_the_determinant_of_a_3_by_3_matrix() {
+    let a = Matrix::from([[1.0, 2.0, 6.0], [-5.0, 8.0, -4.0], [2.0, 6.0, 4.0]]);
+    assert_eq!(a.determinant(), -196.0);
+}
+
+#[test]
+fn should_calculate_the_determinant_of_a_4_by_4_matrix() {
+    let a = Matrix::from([
+        [-2.0, -8.0, 3.0, 5.0],
+        [-3.0, 1.0, 7.0, 3.0],
+        [1.0, 2.0, -9.0, 6.0],
+        [-6.0, 7.0, 7.0, -9.0],
+    ]);
+    assert_eq!(a.determinant(), -4071.0);
 }
