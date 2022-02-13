@@ -28,6 +28,66 @@ impl Matrix {
     fn determinant(m: Matrix2) -> f64 {
         m[0][0] * m[1][1] - m[1][0] * m[0][1]
     }
+
+    fn submatrix_3_to_2(m: Matrix3, row: usize, col: usize) -> Matrix2 {
+        let mut submatrix = [[0.0; 2]; 2];
+        let mut i = 0;
+        let mut j = 0;
+
+        for (index, element) in m.iter().enumerate() {
+            if index == row {
+                continue;
+            }
+            for (index, entry) in element.iter().enumerate() {
+                if index == col {
+                    continue;
+                }
+
+                submatrix[i][j] = *entry;
+
+                j = match j {
+                    1 => 0,
+                    _ => 1,
+                };
+            }
+
+            i = match i {
+                1 => 0,
+                _ => 1,
+            };
+        }
+        submatrix
+    }
+
+    fn submatrix_4_to_3(m: Matrix4, row: usize, col: usize) -> Matrix3 {
+        let mut submatrix = [[0.0; 3]; 3];
+        let mut i = 0;
+        let mut j = 0;
+
+        for (index, element) in m.iter().enumerate() {
+            if index == row {
+                continue;
+            }
+            for (index, entry) in element.iter().enumerate() {
+                if index == col {
+                    continue;
+                }
+
+                submatrix[i][j] = *entry;
+
+                j = match j {
+                    2 => 0,
+                    _ => j + 1,
+                };
+            }
+
+            i = match i {
+                2 => 0,
+                _ => i + 1,
+            };
+        }
+        submatrix
+    }
 }
 
 impl ops::Mul<Matrix> for Matrix {
@@ -256,5 +316,26 @@ fn should_calculate_the_determinant() {
 
     let actual = Matrix::determinant(a);
 
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_return_a_2_x_2_submatrix() {
+    let a: Matrix3 = [[1.0, 5.0, 0.0], [-3.0, 2.0, 7.0], [0.0, 6.0, -3.0]];
+    let expected = [[-3.0, 2.0], [0.0, 6.0]];
+    let actual = Matrix::submatrix_3_to_2(a, 0, 2);
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_return_a_3_x_3_submatrix() {
+    let a: Matrix4 = [
+        [-6.0, 1.0, 1.0, 6.0],
+        [-8.0, 5.0, 8.0, 6.0],
+        [-1.0, 0.0, 8.0, 2.0],
+        [-7.0, 1.0, -1.0, 1.0],
+    ];
+    let expected = [[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]];
+    let actual = Matrix::submatrix_4_to_3(a, 2, 1);
     assert_eq!(expected, actual);
 }
