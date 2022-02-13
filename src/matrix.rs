@@ -88,6 +88,11 @@ impl Matrix {
         }
         submatrix
     }
+
+    fn minor(m: Matrix3, row: usize, col: usize) -> f64 {
+        let submatrix = Matrix::submatrix_3_to_2(m, row, col);
+        Matrix::determinant(submatrix)
+    }
 }
 
 impl ops::Mul<Matrix> for Matrix {
@@ -338,4 +343,10 @@ fn should_return_a_3_x_3_submatrix() {
     let expected = [[-6.0, 1.0, 6.0], [-8.0, 8.0, 6.0], [-7.0, -1.0, 1.0]];
     let actual = Matrix::submatrix_4_to_3(a, 2, 1);
     assert_eq!(expected, actual);
+}
+
+#[test]
+fn should_return_minor_of_3_by_3_matrix() {
+    let a: Matrix3 = [[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]];
+    assert_eq!(Matrix::minor(a, 1, 0), 25.0);
 }
