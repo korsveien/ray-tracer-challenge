@@ -93,6 +93,15 @@ impl Matrix {
         let submatrix = Matrix::submatrix_3_to_2(m, row, col);
         Matrix::determinant(submatrix)
     }
+
+    fn cofactor(m: Matrix3, row: usize, col: usize) -> f64 {
+        let minor = Matrix::minor(m, row, col);
+        if row + col % 2 == 0 {
+            minor
+        } else {
+            -minor
+        }
+    }
 }
 
 impl ops::Mul<Matrix> for Matrix {
@@ -349,4 +358,11 @@ fn should_return_a_3_x_3_submatrix() {
 fn should_return_minor_of_3_by_3_matrix() {
     let a: Matrix3 = [[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]];
     assert_eq!(Matrix::minor(a, 1, 0), 25.0);
+}
+
+#[test]
+fn should_return_cofactor_of_3_by_3_matrix() {
+    let a: Matrix3 = [[3.0, 5.0, 0.0], [2.0, -1.0, -7.0], [6.0, -1.0, 5.0]];
+    assert_eq!(Matrix::cofactor(a, 0, 0), -12.0);
+    assert_eq!(Matrix::cofactor(a, 1, 0), -25.0);
 }
