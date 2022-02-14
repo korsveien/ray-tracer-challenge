@@ -1,8 +1,10 @@
+use crate::equal;
+use std::fmt;
 use std::ops;
 
 type Tuple = [f64; 4];
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone)]
 struct Matrix<const D: usize> {
     entries: [[f64; D]; D],
 }
@@ -32,6 +34,9 @@ impl<const D: usize> Matrix<D> {
 impl Matrix<2> {
     fn determinant(&self) -> f64 {
         self[0][0] * self[1][1] - self[1][0] * self[0][1]
+    }
+    fn is_invertible(&self) -> bool {
+        self.determinant() != 0.0
     }
 }
 
@@ -76,8 +81,7 @@ impl Matrix<3> {
     }
 
     fn minor(&self, row: usize, col: usize) -> f64 {
-        let submatrix = self.submatrix(row, col);
-        submatrix.determinant()
+        self.submatrix(row, col).determinant()
     }
 
     fn cofactor(&self, row: usize, col: usize) -> f64 {
@@ -87,6 +91,10 @@ impl Matrix<3> {
         } else {
             -minor
         }
+    }
+
+    fn is_invertible(&self) -> bool {
+        self.determinant() != 0.0
     }
 }
 
@@ -141,6 +149,95 @@ impl Matrix<4> {
         }
         submatrix
     }
+
+    fn is_invertible(&self) -> bool {
+        self.determinant() != 0.0
+    }
+
+    fn inverse(&self) -> Matrix<4> {
+        assert!(self.is_invertible());
+
+        let mut matrix = Matrix::new();
+        let determinant = self.determinant();
+
+        for row in 0..4 {
+            for col in 0..4 {
+                let cofactor = self.cofactor(row, col);
+                matrix[col][row] = cofactor / determinant;
+            }
+        }
+        matrix
+    }
+}
+
+//FIXME: implement these generally for Matrix<D>
+impl fmt::Debug for Matrix<2> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "");
+        write!(f, "{0:>10}", format!("{0:.5}", self[0][0]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[0][1]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[1][0]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[1][1]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[2][0]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[2][1]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[3][0]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[3][1]))?;
+
+        Ok(())
+    }
+}
+
+impl fmt::Debug for Matrix<3> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "");
+        write!(f, "{0:>10}", format!("{0:.5}", self[0][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[0][1]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[0][2]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[1][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[1][1]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[1][2]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[2][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[2][1]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[2][2]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[3][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[3][1]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[3][2]))?;
+
+        Ok(())
+    }
+}
+
+impl fmt::Debug for Matrix<4> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "");
+        write!(f, "{0:>10}", format!("{0:.5}", self[0][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[0][1]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[0][2]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[0][3]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[1][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[1][1]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[1][2]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[1][3]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[2][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[2][1]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[2][2]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[2][3]))?;
+
+        write!(f, "{0:>10}", format!("{0:.5}", self[3][0]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[3][1]))?;
+        write!(f, "{0:>10}", format!("{0:.5}", self[3][2]))?;
+        writeln!(f, "{0:>10}", format!("{0:.5}", self[3][3]))?;
+
+        Ok(())
+    }
 }
 
 impl<const D: usize> ops::Index<usize> for Matrix<D> {
@@ -154,6 +251,23 @@ impl<const D: usize> ops::Index<usize> for Matrix<D> {
 impl<const D: usize> ops::IndexMut<usize> for Matrix<D> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.entries[index]
+    }
+}
+
+impl<const D: usize> PartialEq<Self> for Matrix<D> {
+    fn eq(&self, other: &Matrix<D>) -> bool {
+        for row in 0..D {
+            for col in 0..D {
+                if equal(self[row][col], other[row][col]) == false {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    fn ne(&self, other: &Matrix<D>) -> bool {
+        !self.eq(other)
     }
 }
 
@@ -415,4 +529,46 @@ fn should_calculate_the_determinant_of_a_4_by_4_matrix() {
         [-6.0, 7.0, 7.0, -9.0],
     ]);
     assert_eq!(a.determinant(), -4071.0);
+}
+
+#[test]
+fn should_determine_if_a_matrix_is_invertible() {
+    let a = Matrix::from([
+        [6.0, 4.0, 4.0, 4.0],
+        [5.0, 5.0, 7.0, 6.0],
+        [4.0, -9.0, 3.0, -7.0],
+        [9.0, 1.0, 7.0, -6.0],
+    ]);
+    assert!(a.is_invertible());
+
+    let b = Matrix::from([
+        [-4.0, 2.0, -2.0, -3.0],
+        [9.0, 6.0, 2.0, 6.0],
+        [0.0, -5.0, 1.0, -5.0],
+        [0.0, 0.0, 0.0, 0.0],
+    ]);
+    assert!(!b.is_invertible());
+}
+
+#[test]
+fn should_calculate_the_inverse_of_a_matrix() {
+    let a = Matrix::from([
+        [-5.0, 2.0, 6.0, -8.0],
+        [1.0, -5.0, 1.0, 8.0],
+        [7.0, 7.0, -6.0, -7.0],
+        [1.0, -3.0, 7.0, 4.0],
+    ]);
+
+    let expected = Matrix::from([
+        [0.21805, 0.45113, 0.24060, -0.04511],
+        [-0.80827, -1.45677, -0.44361, 0.52068],
+        [-0.07895, -0.22368, -0.05263, 0.19737],
+        [-0.52256, -0.81391, -0.30075, 0.30639],
+    ]);
+
+    let b = a.inverse();
+
+    assert_eq!(a.determinant(), 532.0);
+    assert_eq!(a.cofactor(2, 3), -160.0);
+    assert_eq!(expected, b);
 }
