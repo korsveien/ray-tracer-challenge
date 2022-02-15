@@ -1,7 +1,6 @@
 use crate::equal;
 use std::fmt;
 use std::ops;
-use std::process::id;
 
 type Tuple = [f64; 4];
 
@@ -168,6 +167,15 @@ impl Matrix<4> {
             }
         }
         matrix
+    }
+
+    fn translation(x: f64, y: f64, z: f64) -> Matrix<4> {
+        Matrix::from([
+            [1.0, 0.0, 0.0, x],
+            [0.0, 1.0, 0.0, y],
+            [0.0, 0.0, 1.0, z],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
     }
 }
 
@@ -634,4 +642,30 @@ fn should_multiply_a_product_by_its_inverse() {
     let c = a * b;
 
     assert_eq!(c * b.inverse(), a);
+}
+
+#[test]
+fn should_multiply_by_a_translation_matrix() {
+    let transform = Matrix::translation(5.0, -3.0, 2.0);
+    let p: Tuple = [-3.0, 4.0, 5.0, 1.0];
+    let expected: Tuple = [2.0, 1.0, 7.0, 1.0];
+    assert_eq!(transform * p, expected);
+}
+
+#[test]
+fn should_multiply_by_the_inverse_of_a_translation_matrix() {
+    let transform = Matrix::translation(5.0, -3.0, 2.0);
+    let inv = transform.inverse();
+    let p: Tuple = [-3.0, 4.0, 5.0, 1.0];
+
+    let expected: Tuple = [-8.0, 7.0, 3.0, 1.0];
+
+    assert_eq!(inv * p, expected)
+}
+
+#[test]
+fn shoul_not_vectors_when_translating_a_matrix() {
+    let transform = Matrix::translation(5.0, -3.0, 2.0);
+    let v: Tuple = [-3.0, 4.0, 5.0, 0.0];
+    assert_eq!(transform * v, v);
 }
