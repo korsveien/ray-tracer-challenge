@@ -163,9 +163,11 @@ impl Matrix<4> {
         for row in 0..4 {
             for col in 0..4 {
                 let cofactor = self.cofactor(row, col);
-                matrix[col][row] = cofactor / determinant;
+                matrix[col][row] = cofactor;
             }
         }
+        println!("Cofactor matrix:");
+        println!("{:#?}", matrix);
         matrix
     }
 }
@@ -570,5 +572,8 @@ fn should_calculate_the_inverse_of_a_matrix() {
 
     assert_eq!(a.determinant(), 532.0);
     assert_eq!(a.cofactor(2, 3), -160.0);
+    assert_eq!(a.cofactor(3, 2), 105.0);
+    assert_eq!(-160.0 / 532.0, b[3][2]);
+    assert_eq!(105.0 / 532.0, b[2][3]);
     assert_eq!(expected, b);
 }
