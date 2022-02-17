@@ -1,4 +1,4 @@
-use crate::{equal, Tuple};
+use crate::equal;
 use std::ops;
 
 #[derive(Debug, Copy, Clone)]
@@ -9,6 +9,10 @@ pub struct Vector {
 }
 
 impl Vector {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { x, y, z }
+    }
+
     pub fn magnitude(&self) -> f64 {
         let sum_of_squares = self.x.powf(2.0) + self.y.powf(2.0) + self.z.powf(2.0);
         sum_of_squares.sqrt()
@@ -36,15 +40,19 @@ impl Vector {
     }
 }
 
-impl Tuple for Vector {
-    fn new(x: f64, y: f64, z: f64) -> Self {
-        Self { x, y, z }
-    }
-}
-
 impl PartialEq for Vector {
     fn eq(&self, other: &Self) -> bool {
         equal(self.x, other.x) && equal(self.y, other.y) && equal(self.z, other.z)
+    }
+}
+
+impl From<[f64; 3]> for Vector {
+    fn from(array: [f64; 3]) -> Self {
+        Self {
+            x: array[0],
+            y: array[1],
+            z: array[2],
+        }
     }
 }
 

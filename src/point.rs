@@ -1,5 +1,5 @@
+use crate::equal;
 use crate::vector::Vector;
-use crate::{equal, Tuple};
 use std::ops;
 
 #[derive(Debug, Copy, Clone)]
@@ -9,9 +9,19 @@ pub struct Point {
     pub z: f64,
 }
 
-impl Tuple for Point {
-    fn new(x: f64, y: f64, z: f64) -> Self {
-        Self { x, y, z }
+impl Point {
+    pub fn new(x: f64, y: f64, z: f64) -> Point {
+        Point { x, y, z }
+    }
+}
+
+impl From<[f64; 3]> for Point {
+    fn from(array: [f64; 3]) -> Self {
+        Self {
+            x: array[0],
+            y: array[1],
+            z: array[2],
+        }
     }
 }
 
