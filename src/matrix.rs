@@ -196,6 +196,24 @@ impl Matrix<4> {
             [0.0, 0.0, 0.0, 1.0],
         ])
     }
+
+    fn rotation_y(r: f64) -> Matrix<4> {
+        Matrix::from([
+            [r.cos(), 0.0, r.sin(), 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [-r.sin(), 0.0, r.cos(), 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
+    }
+
+    fn rotation_z(r: f64) -> Matrix<4> {
+        Matrix::from([
+            [r.cos(), -r.sin(), 0.0, 0.0],
+            [r.sin(), r.cos(), 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
+    }
 }
 
 //FIXME: implement these generally for Matrix<D>
@@ -734,5 +752,31 @@ mod tests {
             inv * p,
             Point::from([0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0)])
         );
+    }
+
+    #[test]
+    fn should_rotate_a_point_around_the_y_axis() {
+        let p = Point::new(0.0, 0.0, 1.0);
+        let half_quarter = Matrix::rotation_y(PI / 4.0);
+        let full_quarter = Matrix::rotation_y(PI / 2.0);
+
+        assert_eq!(
+            half_quarter * p,
+            Point::new(2.0_f64.sqrt() / 2.0, 0.0, 2.0_f64.sqrt() / 2.0)
+        );
+        assert_eq!(full_quarter * p, Point::new(1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn should_rotate_a_point_around_the_z_axis() {
+        let p = Point::new(0.0, 1.0, 0.0);
+        let half_quarter = Matrix::rotation_z(PI / 4.0);
+        let full_quarter = Matrix::rotation_z(PI / 2.0);
+
+        assert_eq!(
+            half_quarter * p,
+            Point::new(-(2.0_f64.sqrt() / 2.0), 2.0_f64.sqrt() / 2.0, 0.0)
+        );
+        assert_eq!(full_quarter * p, Point::new(-1.0, 0.0, 0.0));
     }
 }
