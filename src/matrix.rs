@@ -830,4 +830,33 @@ mod tests {
         let p = Point::new(2.0, 3.0, 4.0);
         assert_eq!(transform * p, Point::new(2.0, 3.0, 7.0));
     }
+
+    #[test]
+    fn should_apply_transformations_in_sequence() {
+        let p = Point::new(1.0, 0.0, 1.0);
+        let a = Matrix::rotation_x(PI / 2.0);
+        let b = Matrix::scaling(5.0, 5.0, 5.0);
+        let c = Matrix::translation(10.0, 5.0, 7.0);
+
+        let p2 = a * p;
+        assert_eq!(p2, Point::new(1.0, -1.0, 0.0));
+
+        let p3 = b * p2;
+        assert_eq!(p3, Point::new(5.0, -5.0, 0.0));
+
+        let p4 = c * p3;
+        assert_eq!(p4, Point::new(15.0, 0.0, 7.0));
+    }
+
+    #[test]
+    fn should_transform_in_reversed_order() {
+        let p = Point::new(1.0, 0.0, 1.0);
+
+        let a = Matrix::rotation_x(PI / 2.0);
+        let b = Matrix::scaling(5.0, 5.0, 5.0);
+        let c = Matrix::translation(10.0, 5.0, 7.0);
+
+        let t = c * b * a;
+        assert_eq!(t * p, Point::new(15.0, 0.0, 7.0));
+    }
 }
