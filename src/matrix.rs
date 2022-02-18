@@ -214,6 +214,15 @@ impl Matrix<4> {
             [0.0, 0.0, 0.0, 1.0],
         ])
     }
+
+    fn shearing(x_y: f64, x_z: f64, y_x: f64, y_z: f64, z_x: f64, z_y: f64) -> Matrix<4> {
+        Matrix::from([
+            [1.0, x_y, x_z, 0.0],
+            [y_x, 1.0, y_z, 0.0],
+            [z_x, z_y, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
+    }
 }
 
 //FIXME: implement these generally for Matrix<D>
@@ -778,5 +787,47 @@ mod tests {
             Point::new(-(2.0_f64.sqrt() / 2.0), 2.0_f64.sqrt() / 2.0, 0.0)
         );
         assert_eq!(full_quarter * p, Point::new(-1.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn should_move_x_in_proportion_to_y() {
+        let transform = Matrix::shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(5.0, 3.0, 4.0));
+    }
+
+    #[test]
+    fn should_move_x_in_proportion_to_z() {
+        let transform = Matrix::shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(6.0, 3.0, 4.0));
+    }
+
+    #[test]
+    fn should_move_y_in_proportion_to_x() {
+        let transform = Matrix::shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(2.0, 5.0, 4.0));
+    }
+
+    #[test]
+    fn should_move_y_in_proportion_to_z() {
+        let transform = Matrix::shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(2.0, 7.0, 4.0));
+    }
+
+    #[test]
+    fn should_move_z_in_proportion_to_x() {
+        let transform = Matrix::shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(2.0, 3.0, 6.0));
+    }
+
+    #[test]
+    fn should_move_z_in_proportion_to_y() {
+        let transform = Matrix::shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(2.0, 3.0, 7.0));
     }
 }
