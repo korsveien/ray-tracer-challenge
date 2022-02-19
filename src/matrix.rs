@@ -225,71 +225,16 @@ impl Matrix<4> {
     }
 }
 
-//FIXME: implement these generally for Matrix<D>
-impl fmt::Debug for Matrix<2> {
+impl<const D: usize> fmt::Debug for Matrix<D> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let width = 10;
+        let precision = 5;
         writeln!(f, "");
-        write!(f, "{0:>10}", format!("{0:.5}", self[0][0]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[0][1]))?;
 
-        write!(f, "{0:>10}", format!("{0:.5}", self[1][0]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[1][1]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[2][0]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[2][1]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[3][0]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[3][1]))?;
-
-        Ok(())
-    }
-}
-
-impl fmt::Debug for Matrix<3> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "");
-        write!(f, "{0:>10}", format!("{0:.5}", self[0][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[0][1]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[0][2]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[1][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[1][1]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[1][2]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[2][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[2][1]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[2][2]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[3][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[3][1]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[3][2]))?;
-
-        Ok(())
-    }
-}
-
-impl fmt::Debug for Matrix<4> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "");
-        write!(f, "{0:>10}", format!("{0:.5}", self[0][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[0][1]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[0][2]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[0][3]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[1][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[1][1]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[1][2]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[1][3]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[2][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[2][1]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[2][2]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[2][3]))?;
-
-        write!(f, "{0:>10}", format!("{0:.5}", self[3][0]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[3][1]))?;
-        write!(f, "{0:>10}", format!("{0:.5}", self[3][2]))?;
-        writeln!(f, "{0:>10}", format!("{0:.5}", self[3][3]))?;
+        for row in 0..D {
+            write!(f, "| {0:>width$}", format!("{0:.precision$}", self[row][0]))?;
+            writeln!(f, "{0:>width$}", format!("{0:.precision$} |", self[row][1]))?;
+        }
 
         Ok(())
     }
