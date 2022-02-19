@@ -288,7 +288,6 @@ impl<const D: usize> ops::Mul<Matrix<D>> for Matrix<D> {
     }
 }
 
-//FIXME: this one copies, but should mutate for speed
 impl ops::Mul<Point> for Matrix<4> {
     type Output = Point;
 
@@ -416,8 +415,8 @@ mod tests {
             [0.0, 0.0, 0.0, 1.0],
         ]);
 
-        let b = Point::from([1.0, 2.0, 3.0]);
-        let expected = Point::from([18.0, 24.0, 33.0]);
+        let b = Point::new(1.0, 2.0, 3.0);
+        let expected = Point::new(18.0, 24.0, 33.0);
         let actual = a * b;
 
         assert_eq!(expected, actual);
@@ -641,8 +640,8 @@ mod tests {
     #[test]
     fn should_multiply_by_a_translation_matrix() {
         let transform = Matrix::translation(5.0, -3.0, 2.0);
-        let p = Point::from([-3.0, 4.0, 5.0]);
-        let expected = Point::from([2.0, 1.0, 7.0]);
+        let p = Point::new(-3.0, 4.0, 5.0);
+        let expected = Point::new(2.0, 1.0, 7.0);
         assert_eq!(transform * p, expected);
     }
 
@@ -650,8 +649,8 @@ mod tests {
     fn should_multiply_by_the_inverse_of_a_translation_matrix() {
         let transform = Matrix::translation(5.0, -3.0, 2.0);
         let inv = transform.inverse();
-        let p = Point::from([-3.0, 4.0, 5.0]);
-        let expected = Point::from([-8.0, 7.0, 3.0]);
+        let p = Point::new(-3.0, 4.0, 5.0);
+        let expected = Point::new(-8.0, 7.0, 3.0);
 
         assert_eq!(inv * p, expected)
     }
@@ -659,8 +658,8 @@ mod tests {
     #[test]
     fn should_scale_a_matrix_applied_to_a_point() {
         let transform = Matrix::scaling(2.0, 3.0, 4.0);
-        let p = Point::from([-4.0, 6.0, 8.0]);
-        assert_eq!(transform * p, Point::from([-8.0, 18.0, 32.0]));
+        let p = Point::new(-4.0, 6.0, 8.0);
+        assert_eq!(transform * p, Point::new(-8.0, 18.0, 32.0));
     }
 
     #[test]
@@ -681,30 +680,30 @@ mod tests {
     #[test]
     fn should_reflect_by_scaling_with_a_negative_value() {
         let transform = Matrix::scaling(-1.0, 1.0, 1.0);
-        let p = Point::from([2.0, 3.0, 4.0]);
-        assert_eq!(transform * p, Point::from([-2.0, 3.0, 4.0]));
+        let p = Point::new(2.0, 3.0, 4.0);
+        assert_eq!(transform * p, Point::new(-2.0, 3.0, 4.0));
     }
 
     #[test]
     fn should_rotate_a_point_around_the_x_axis() {
-        let p = Point::from([0.0, 1.0, 0.0]);
+        let p = Point::new(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_x(PI / 4.0);
         let full_quarter = Matrix::rotation_x(PI / 2.0);
         assert_eq!(
             half_quarter * p,
-            Point::from([0.0, (2.0_f64.sqrt() / 2.0), (2.0_f64.sqrt() / 2.0)])
+            Point::new(0.0, 2.0_f64.sqrt() / 2.0, 2.0_f64.sqrt() / 2.0)
         );
-        assert_eq!(full_quarter * p, Point::from([0.0, 0.0, 1.0]));
+        assert_eq!(full_quarter * p, Point::new(0.0, 0.0, 1.0));
     }
 
     #[test]
     fn should_rotate_a_point_in_the_x_axis_in_the_inverse_direction() {
-        let p = Point::from([0.0, 1.0, 0.0]);
+        let p = Point::new(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_x(PI / 4.0);
         let inv = half_quarter.inverse();
         assert_eq!(
             inv * p,
-            Point::from([0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0)])
+            Point::new(0.0, 2.0_f64.sqrt() / 2.0, -(2.0_f64.sqrt() / 2.0))
         );
     }
 
